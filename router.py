@@ -3,6 +3,7 @@
 import re
 import logging
 from typing import Literal, Dict
+from collections import OrderedDict
 
 logging.basicConfig(
     level=logging.INFO,
@@ -30,13 +31,13 @@ class LLMRouter:
             "mistral_7b_instruct": {"custo": 0.00, "latencia": 1.0, "forca": "respostas curtas e fallback"}
         }
 
-        self.classificador = {
-            "simples": r"(cadastrar|login|cadastro|parceira|contato|telefone|site|email)",
-            "financeira": r"(nota\s+fiscal|repasse|valor|pagamento|pix|transferência|antecipação|inadimplência|saldo|limite)",
+        self.classificador = OrderedDict({
+            "financeira": r"(nota\s+fiscal|repasse|juros|receb[erei]|pagamento|pix|transfer(ência|ir)|antecipação|inadimplência|saldo|limite|dinheiro|receber|valor|custo|fatura|financeir[ao])",
             "técnica": r"(webhook|API|token|sistema|xano|dashboard|integração|formulário|backoffice|json)",
             "jurídica": r"(contrato|termo|jurídico|assinatura|validade legal|compliance)",
             "emocional": r"(sonhos|ajudar|impacto|missão|sorrisos|pacientes|mudança|história)",
-        }
+            "simples": r"(cadastrar|login|cadastro|parceira|contato|telefone|site|email)"
+        })
 
     def classificar_pergunta(self, pergunta: str) -> str:
         pergunta = pergunta.lower()
@@ -54,7 +55,6 @@ class LLMRouter:
             logger.info("Política: baixo custo — retornando Mistral.")
             return {"modelo": "mistral_7b_instruct", "motivo": "política de baixo custo"}
 
-        # Política balanceada
         if tipo == "técnica":
             return {"modelo": "openai_gpt3.5", "motivo": "bom para lógica técnica e custo razoável"}
         elif tipo == "financeira":
@@ -64,6 +64,9 @@ class LLMRouter:
         elif tipo == "emocional":
             return {"modelo": "llama3_70b", "motivo": "bom tom para empatia e impacto emocional"}
         elif tipo == "simples":
-            return {"modelo": "llama3_70b", "motivo": "resposta objetiva e rápida"}
+            return {"modelo": "mistral_7b_instruct", "motivo": "resposta objetiva e rápida"}
+        elif tipo == "geral":
+            return {"modelo": "mistral_7b_instruct", "motivo": "fallback para perguntas genéricas"}
         else:
-            return {"modelo": "openai_gpt3.5", "motivo": "modelo versátil e confiável"}
+            return {"modelo": "mistral_7b_instruct", "motivo": "classificação indefinida - fallback"}
+
