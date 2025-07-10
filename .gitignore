@@ -230,3 +230,5 @@ db_faiss/
 
 # Arquivos de log
 *.log
+
+share/
