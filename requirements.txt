@@ -1,0 +1,11 @@
+langchain
+langchain-core
+langchain-community
+langchain-openai
+langchain-anthropic
+langchain-mistralai
+python-dotenv
+openai
+sentence-transformers
+faiss-cpu
+python-telegram-bot
