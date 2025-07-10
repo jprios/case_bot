@@ -1,4 +1,3 @@
-
 # Projeto de Assistente Inteligente Parcela Mais
 
 ## 1. Introdução
@@ -111,9 +110,25 @@ Este módulo simula a integração com fontes externas de informação. Está es
 
 ---
 
-## 4. Estratégias e Decisões Técnicas
+## 4. Orquestração do Modelo
 
-### 4.1. Persona do Agente
+A orquestração geral da geração de resposta segue as seguintes etapas coordenadas entre os módulos:
+
+1. **Recepção da pergunta** pelo bot via `telegram_bot.py`, com verificação da sessão e envio da mensagem introdutória se necessário.
+2. **Classificação da pergunta** em categorias (jurídica, financeira, técnica etc.) por meio da classe `LLMRouter`.
+3. **Escolha do modelo** mais apropriado com base na política definida (ex: balanceada ou baixo custo).
+4. **Busca de contexto** no banco vetorial com `vector_db.py`, agregando histórico ou informações similares à pergunta.
+5. **Geração da resposta** usando `LLMInterface`, que injeta persona, envia ao modelo e trata possíveis falhas com fallback.
+6. **Resposta ao usuário** pelo bot no Telegram.
+7. **Armazenamento da interação** no banco vetorial para uso futuro e melhoria de contexto.
+
+Essa orquestração permite modularidade, adaptabilidade a diferentes provedores e personalização do comportamento do assistente conforme as necessidades do negócio.
+
+---
+
+## 5. Estratégias e Decisões Técnicas
+
+### 5.1. Persona do Agente
 
 Foi desenvolvido um prompt fixo que define o analista da Parcela Mais com as seguintes instruções:
 
@@ -124,13 +139,13 @@ Foi desenvolvido um prompt fixo que define o analista da Parcela Mais com as seg
 
 Este prompt é injetado como `SystemMessage` no início de cada interação.
 
-### 4.2. Fallback com Mistral
+### 5.2. Fallback com Mistral
 
 Como apenas o modelo `mistral_7b_instruct` pode ser acessado gratuitamente via OpenRouter sem API key, foi definido como fallback em caso de falhas. Contudo, essa regra é modular e pode ser alterada para outros modelos ou fornecedores.
 
 ---
 
-## 5. Considerações Finais
+## 6. Considerações Finais
 
 O projeto entrega um agente conversacional robusto, capaz de:
 
@@ -141,4 +156,3 @@ O projeto entrega um agente conversacional robusto, capaz de:
 - Escalar o uso com outros canais, como API pública ou interface web.
 
 A solução está modularizada, extensível e preparada para futura evolução com foco em escalabilidade e personalização.
-
