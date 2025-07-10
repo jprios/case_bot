@@ -1,5 +1,5 @@
 
-# Relatório Técnico – Projeto de Assistente Inteligente Parcela Mais
+# Projeto de Assistente Inteligente Parcela Mais
 
 ## 1. Introdução
 
