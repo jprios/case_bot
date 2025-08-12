@@ -1,158 +1,158 @@
-# Projeto de Assistente Inteligente Parcela Saúde
+# Parcela Saúde Intelligent Assistant Project
 
-## 1. Introdução
+## 1. Introduction
 
-Este documento apresenta a arquitetura e implementação de um agente de linguagem natural que simula um **analista da Parcela Saúde**, respondendo a perguntas sobre financiamento de procedimentos médicos com base em um contexto detalhado. A solução foi desenvolvida utilizando Python, bibliotecas do ecossistema LangChain, e modelos de linguagem (LLMs) de múltiplos provedores.
-
----
-
-## 2. Arquitetura Geral
-
-A arquitetura do projeto é modular e orientada a componentes. Ela se organiza em cinco blocos principais:
-
-1. `telegram_bot.py`: ponto de entrada para interações via Telegram.
-2. `interface.py`: gerencia a comunicação com os LLMs.
-3. `router.py`: define a lógica para escolha do modelo com base na pergunta.
-4. `vector_db.py`: gerencia memória semântica por meio de um banco vetorial.
-5. `context_loader.py`: carrega dados contextuais a partir de múltiplas fontes (Slack, Email, Drive etc.).
+This document presents the architecture and implementation of a natural language agent that simulates a **Parcela Saúde analyst**, responding to questions about financing medical procedures based on detailed context. The solution was developed using Python, libraries from the LangChain ecosystem, and language models (LLMs) from multiple providers.
 
 ---
 
-## 3. Componentes e Funcionalidades
+## 2. General Architecture
 
-### 3.1. `telegram_bot.py` – Bot de Atendimento
+The project architecture is modular and component-oriented. It is organized into five main blocks:
 
-Este script inicializa um bot Telegram capaz de:
-
-- Responder qualquer mensagem recebida (sem necessidade de `/start`).
-- Iniciar a conversa com uma **mensagem introdutória personalizada**.
-- Encaminhar perguntas à interface para geração de respostas com LLM.
-- Monitorar inatividade por tempo e encerrar sessões com mensagens de aviso.
-
-**Funções principais:**
-
-- `handle_message`: lida com cada mensagem, ativa a lógica do roteador, envia mensagens de espera e resposta.
-- `monitorar_inatividade`: envia lembretes e finaliza sessões após inatividade.
-- `enviar_boas_vindas`: envia mensagem introdutória personalizada por usuário.
+1. `telegram_bot.py`: entry point for Telegram interactions.
+2. `interface.py`: manages communication with LLMs.
+3. `router.py`: defines the logic for model selection based on the question.
+4. `vector_db.py`: manages semantic memory through a vector database.
+5. `context_loader.py`: loads contextual data from multiple sources (Slack, Email, Drive, etc.).
 
 ---
 
-### 3.2. `interface.py` – Integração com LLMs
+## 3. Components and Features
 
-Este módulo intermedia a chamada aos modelos de linguagem, adicionando:
+### 3.1. `telegram_bot.py` – Support Bot
 
-- **Prompt customizado** com persona da Parcela Saúde.
-- **Fallback inteligente** caso o modelo principal falhe.
-- **Indexação semântica** das perguntas/respostas para memória futura.
+This script initializes a Telegram bot capable of:
 
-**Classe: `LLMInterface`**
+- Responding to any received message (no `/start` required).
+- Starting the conversation with a **custom introductory message**.
+- Forwarding questions to the interface for LLM-based responses.
+- Monitoring inactivity over time and ending sessions with warning messages.
 
-- `responder(pergunta: str, modelo: str) -> str`: método principal.
-  - Injeta `SystemMessage` com persona e instruções.
-  - Envia `HumanMessage` ao LLM escolhido.
-  - Realiza até 5 tentativas com backoff exponencial.
-  - Aplica fallback com o modelo `mistral_7b_instruct`, por ser o único com chave de acesso gratuita neste contexto (regra ajustável).
-  - Indexa a resposta à base vetorial para uso futuro via memória semântica.
+**Main functions:**
+
+- `handle_message`: processes each message, triggers router logic, sends waiting and response messages.
+- `monitorar_inatividade`: sends reminders and ends sessions after inactivity.
+- `enviar_boas_vindas`: sends a personalized introductory message to each user.
 
 ---
 
-### 3.3. `router.py` – Roteamento de Modelos
+### 3.2. `interface.py` – LLM Integration
 
-Este componente seleciona o modelo mais adequado com base no conteúdo da pergunta.
+This module mediates calls to language models, adding:
 
-**Classe: `LLMRouter`**
+- **Custom prompt** with the Parcela Saúde persona.
+- **Intelligent fallback** in case the main model fails.
+- **Semantic indexing** of questions/answers for future memory.
+
+**Class: `LLMInterface`**
+
+- `responder(pergunta: str, modelo: str) -> str`: main method.
+  - Injects `SystemMessage` with persona and instructions.
+  - Sends `HumanMessage` to the chosen LLM.
+  - Performs up to 5 attempts with exponential backoff.
+  - Applies fallback with the `mistral_7b_instruct` model, as it is the only one with free access in this context (adjustable rule).
+  - Indexes the answer into the vector database for future semantic memory usage.
+
+---
+
+### 3.3. `router.py` – Model Routing
+
+This component selects the most appropriate model based on the content of the question.
+
+**Class: `LLMRouter`**
 
 - `escolher_modelo(pergunta: str) -> dict`:
-  - Analisa palavras-chave sensíveis (ex: "dinheiro", "prazo", "jurídico").
-  - Direciona perguntas técnicas sensíveis para modelos mais potentes como GPT-4 ou Claude.
-  - Em outros casos, prioriza modelos de menor custo, como GPT-3.5 ou Mistral.
+  - Analyzes sensitive keywords (e.g., "money", "term", "legal").
+  - Routes sensitive technical questions to more powerful models like GPT-4 or Claude.
+  - In other cases, prioritizes lower-cost models like GPT-3.5 or Mistral.
 
-A lógica é simples mas modular, podendo ser estendida para considerar:
-- Classificação semântica.
-- Custo por token.
-- Tempo médio de resposta (latência).
-
----
-
-### 3.4. `vector_db.py` – Banco Vetorial com FAISS
-
-Este módulo implementa memória semântica com **FAISS**, utilizando **HuggingFace Embeddings** com o modelo `all-MiniLM-L6-v2`.
-
-**Justificativa para o uso do FAISS:**
-
-- É local e leve, ideal para projetos de protótipo sem necessidade de serviços externos.
-- Suporta busca semântica eficiente em embeddings.
-- Fácil integração com LangChain.
-- Não depende de conectividade com serviços pagos como Pinecone ou Weaviate.
-
-**Funções principais:**
-
-- `indexar_mensagem(pergunta, resposta)`: converte em documento, gera embedding e salva no índice vetorial.
-- `buscar_contexto(pergunta)`: busca similaridade semântica da nova pergunta com o histórico indexado.
+The logic is simple but modular, and can be extended to consider:
+- Semantic classification.
+- Cost per token.
+- Average response time (latency).
 
 ---
 
-### 3.5. `context_loader.py` – Carregamento de Contexto
+### 3.4. `vector_db.py` – Vector Database with FAISS
 
-Este módulo simula a integração com fontes externas de informação. Está estruturado para aceitar múltiplos formatos e origens, como:
+This module implements semantic memory with **FAISS**, using **HuggingFace Embeddings** with the `all-MiniLM-L6-v2` model.
 
-- Mensagens de WhatsApp
+**Reasons for using FAISS:**
+
+- It is local and lightweight, ideal for prototype projects without the need for external services.
+- Supports efficient semantic search in embeddings.
+- Easy integration with LangChain.
+- Does not depend on connectivity with paid services like Pinecone or Weaviate.
+
+**Main functions:**
+
+- `indexar_mensagem(pergunta, resposta)`: converts into a document, generates embedding, and saves it in the vector index.
+- `buscar_contexto(pergunta)`: searches for semantic similarity between the new question and the indexed history.
+
+---
+
+### 3.5. `context_loader.py` – Context Loading
+
+This module simulates integration with external information sources. It is structured to accept multiple formats and origins, such as:
+
+- WhatsApp messages
 - Emails (.eml, .msg)
-- Arquivos PDF e Word
-- Planilhas
+- PDF and Word files
+- Spreadsheets
 - Slack (via API)
 
-**Funções principais:**
+**Main functions:**
 
-- `carregar_contexto_de_arquivos()`: percorre diretórios e carrega arquivos de texto, .pdf, .docx etc.
-- `limpar_e_normalizar(texto)`: remove ruído e padroniza para indexação vetorial.
-- `criar_documentos(textos)`: transforma textos em `Document` para serem embutidos.
-
----
-
-## 4. Orquestração do Modelo
-
-A orquestração geral da geração de resposta segue as seguintes etapas coordenadas entre os módulos:
-
-1. **Recepção da pergunta** pelo bot via `telegram_bot.py`, com verificação da sessão e envio da mensagem introdutória se necessário.
-2. **Classificação da pergunta** em categorias (jurídica, financeira, técnica etc.) por meio da classe `LLMRouter`.
-3. **Escolha do modelo** mais apropriado com base na política definida (ex: balanceada ou baixo custo).
-4. **Busca de contexto** no banco vetorial com `vector_db.py`, agregando histórico ou informações similares à pergunta.
-5. **Geração da resposta** usando `LLMInterface`, que injeta persona, envia ao modelo e trata possíveis falhas com fallback.
-6. **Resposta ao usuário** pelo bot no Telegram.
-7. **Armazenamento da interação** no banco vetorial para uso futuro e melhoria de contexto.
-
-Essa orquestração permite modularidade, adaptabilidade a diferentes provedores e personalização do comportamento do assistente conforme as necessidades do negócio.
+- `carregar_contexto_de_arquivos()`: scans directories and loads text, .pdf, .docx files, etc.
+- `limpar_e_normalizar(texto)`: removes noise and standardizes content for vector indexing.
+- `criar_documentos(textos)`: transforms texts into `Document` objects for embedding.
 
 ---
 
-## 5. Estratégias e Decisões Técnicas
+## 4. Model Orchestration
 
-### 5.1. Persona do Agente
+The general orchestration of the response generation follows these coordinated steps among modules:
 
-Foi desenvolvido um prompt fixo que define o analista da Parcela Saúde com as seguintes instruções:
+1. **Receive the question** via the bot in `telegram_bot.py`, check session status, and send the introductory message if necessary.
+2. **Classify the question** into categories (legal, financial, technical, etc.) through the `LLMRouter` class.
+3. **Select the most appropriate model** based on the defined policy (e.g., balanced or low-cost).
+4. **Search for context** in the vector database with `vector_db.py`, adding history or information similar to the question.
+5. **Generate the answer** using `LLMInterface`, which injects the persona, sends it to the model, and handles possible failures with fallback.
+6. **Send the answer** to the user via the Telegram bot.
+7. **Store the interaction** in the vector database for future use and context improvement.
 
-- Postura empática, profissional e clara.
-- Conhecimento profundo sobre financiamento, crédito e repasse.
-- Evitar respostas genéricas.
-- Proibido declarar-se IA.
-
-Este prompt é injetado como `SystemMessage` no início de cada interação.
-
-### 5.2. Fallback com Mistral
-
-Como apenas o modelo `mistral_7b_instruct` pode ser acessado gratuitamente via OpenRouter sem API key, foi definido como fallback em caso de falhas. Contudo, essa regra é modular e pode ser alterada para outros modelos ou fornecedores.
+This orchestration allows modularity, adaptability to different providers, and customization of the assistant's behavior according to the needs of the project.
 
 ---
 
-## 6. Considerações Finais
+## 5. Strategies and Technical Decisions
 
-O projeto entrega um agente conversacional robusto, capaz de:
+### 5.1. Agent Persona
 
-- Atender dúvidas de clientes via Telegram.
-- Utilizar múltiplos LLMs com roteamento inteligente.
-- Manter memória semântica por meio de FAISS.
-- Ser facilmente expandido com novas fontes de contexto (Slack, WhatsApp, etc.).
-- Escalar o uso com outros canais, como API pública ou interface web.
+A fixed prompt was developed that defines the Parcela Saúde analyst with the following instructions:
 
-A solução está modularizada, extensível e preparada para futura evolução com foco em escalabilidade e personalização.
+- Empathetic, professional, and clear demeanor.
+- Deep knowledge of financing, credit, and disbursement.
+- Avoid generic answers.
+- Forbidden to declare itself as AI.
+
+This prompt is injected as a `SystemMessage` at the beginning of each interaction.
+
+### 5.2. Fallback with Mistral
+
+As only the `mistral_7b_instruct` model can be accessed for free via OpenRouter without an API key, it was set as the fallback in case of failures. However, this rule is modular and can be changed to other models or providers.
+
+---
+
+## 6. Final Considerations
+
+The project delivers a robust conversational agent capable of:
+
+- Handling customer questions via Telegram.
+- Using multiple LLMs with intelligent routing.
+- Maintaining semantic memory through FAISS.
+- Being easily expanded with new context sources (Slack, WhatsApp, etc.).
+- Scaling to other channels, such as public API or web interface.
+
+The solution is modularized, extensible, and prepared for future evolution with a focus on scalability and customization.
