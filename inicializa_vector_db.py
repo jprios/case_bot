@@ -11,8 +11,8 @@ mensagens = [
         "resposta": "São analisados score de crédito, profissão, renda declarada e histórico financeiro com base em consultas aos bureaus como Serasa e SPC."
     },
     {
-        "pergunta": "Qual o diferencial da Parcela Mais em relação a outros financiamentos?",
-        "resposta": "A Parcela Mais oferece integração total com a clínica, repasse rápido, ausência de glosas e taxas reduzidas."
+        "pergunta": "Qual o diferencial da Parcela Saúde em relação a outros financiamentos?",
+        "resposta": "A Parcela Saúde oferece integração total com a clínica, repasse rápido, ausência de glosas e taxas reduzidas."
     }
 ]
 

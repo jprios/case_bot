@@ -39,7 +39,7 @@ SAUDACOES_INICIAIS = {"oi", "olá", "bom dia", "boa tarde", "boa noite", "hey", 
 async def enviar_boas_vindas(nome, update: Update):
     mensagem = (
         f"Olá, {nome}! 👋\n\n"
-        "Eu sou um analista da *Parcela Mais*, especialista em financiamento para procedimentos médicos.\n"
+        "Eu sou um analista do *Parcela Saúde*, especialista em financiamento para procedimentos médicos.\n"
         "Pode perguntar sobre crédito, repasses, contratos ou qualquer dúvida sobre nossa plataforma!\n\n"
         "Como posso te ajudar hoje?"
     )
@@ -85,7 +85,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 def main():
     app = ApplicationBuilder().token(TELEGRAM_TOKEN).build()
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
-    print("🤖 Bot da Parcela Mais iniciado e aguardando mensagens.")
+    print("🤖 Bot do Parcela Saúde iniciado e aguardando mensagens.")
     app.run_polling()
 
 if __name__ == "__main__":

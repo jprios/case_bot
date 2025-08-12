@@ -19,7 +19,7 @@ def carregar_de_email() -> List[Document]:
     logging.info("Importando mensagens de Email...")
     mensagens = [
         ("O que acontece em caso de inadimplência do paciente?",
-         "Em caso de inadimplência, a Parcela Mais aciona os mecanismos de cobrança previstos em contrato.")
+         "Em caso de inadimplência, a Parcela Saúde aciona os mecanismos de cobrança previstos em contrato.")
     ]
     return [Document(page_content=f"{pergunta}\n{resposta}") for pergunta, resposta in mensagens]
 

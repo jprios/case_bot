@@ -1,8 +1,8 @@
-# Projeto de Assistente Inteligente Parcela Mais
+# Projeto de Assistente Inteligente Parcela Saúde
 
 ## 1. Introdução
 
-Este documento apresenta a arquitetura e implementação de um agente de linguagem natural que simula um **analista da Parcela Mais**, respondendo a perguntas sobre financiamento de procedimentos médicos com base em um contexto detalhado. A solução foi desenvolvida utilizando Python, bibliotecas do ecossistema LangChain, e modelos de linguagem (LLMs) de múltiplos provedores.
+Este documento apresenta a arquitetura e implementação de um agente de linguagem natural que simula um **analista da Parcela Saúde**, respondendo a perguntas sobre financiamento de procedimentos médicos com base em um contexto detalhado. A solução foi desenvolvida utilizando Python, bibliotecas do ecossistema LangChain, e modelos de linguagem (LLMs) de múltiplos provedores.
 
 ---
 
@@ -41,7 +41,7 @@ Este script inicializa um bot Telegram capaz de:
 
 Este módulo intermedia a chamada aos modelos de linguagem, adicionando:
 
-- **Prompt customizado** com persona da Parcela Mais.
+- **Prompt customizado** com persona da Parcela Saúde.
 - **Fallback inteligente** caso o modelo principal falhe.
 - **Indexação semântica** das perguntas/respostas para memória futura.
 
@@ -130,7 +130,7 @@ Essa orquestração permite modularidade, adaptabilidade a diferentes provedores
 
 ### 5.1. Persona do Agente
 
-Foi desenvolvido um prompt fixo que define o analista da Parcela Mais com as seguintes instruções:
+Foi desenvolvido um prompt fixo que define o analista da Parcela Saúde com as seguintes instruções:
 
 - Postura empática, profissional e clara.
 - Conhecimento profundo sobre financiamento, crédito e repasse.
